@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Apps placed first (left to right) until the layout is rearranged on the TV.
+         The dock shows the first six. Apps that aren't installed are skipped. -->
+    <string-array name="dock_packages">
+        <item>com.google.android.youtube.tv</item>
+        <item>in.startv.hotstar</item>
+        <item>com.amazon.amazonvideo.livingroom</item>
+        <item>com.netflix.ninja</item>
+    </string-array>
+
+    <!-- Remote buttons that open Settings, by Linux scan code as `getevent -lt` prints it
+         (0x286 = 646 is the gear button on this BRAVIA remote). -->
+    <integer-array name="settings_key_scancodes">
+        <item>646</item>
+    </integer-array>
+
+    <!-- The app that plays HDMI, AV and Live TV on this set. -->
+    <string name="tv_app_package">com.sony.dtv.tvx</string>
+</resources>

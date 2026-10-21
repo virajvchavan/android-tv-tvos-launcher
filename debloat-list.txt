@@ -1,0 +1,42 @@
+# Sony BRAVIA KD-43X80L (BRAVIA_VH22_M_PA), Google TV, Android 12, firmware STT2.230505.001.S136
+# Disabled with: pm disable-user --user 0 <package>   (nothing was uninstalled)
+# Re-enable one:  adb shell pm enable <package>        Undo all: tools/restore.sh
+#
+# Boot check: after a reboot, every package below was still disabled.
+# This firmware does not re-enable any of them at boot.
+#
+# Already disabled by Sony before we started (left alone):
+#   com.sony.dtv.b2b.softap, com.sony.dtv.b2b.vendorprotocol, com.sony.dtv.kenhchonloc, com.sony.dtv.livingfit
+
+## Tracking / data collection
+tv.samba.ssm                              Samba TV: recognises what is on screen to build an ad profile
+tv.samba.ssm.ui                           Samba TV settings screen
+com.sonyericsson.idd.agent                Sony usage-data agent (IDD)
+com.sony.dtv.usercontext                  Sony "user context" feed for recommendations
+com.qterics.da.product                    Remote device agent (Qterics)
+com.sony.dtv.da.service                   Sony remote-support session provider
+com.sony.dtv.sonybugreportsys             Sony bug-report uploader
+
+## Ads, promos and store demo
+com.sony.dtv.promos                       Sony promotions
+com.sony.dtv.sonyselect                   Sony Select app promos
+com.sony.dtv.sonytab                      "Sony" tab on the Google TV home screen
+android.autoinstalls.config.sony.bravia   Auto-installs promoted apps
+com.sony.dtv.demosupport                  Store demo mode
+com.sony.dtv.multiscreendemo              Store demo
+
+## Not used here (asked first)
+com.sony.dtv.gestureapp                   BRAVIA CAM gestures (no camera)
+com.sony.dtv.sensingfusionservice         BRAVIA CAM sensing
+com.sony.dtv.sensingcamera.settings       BRAVIA CAM settings
+com.sony.dtv.sensingcamera.fwupdate       BRAVIA CAM firmware updater
+com.sony.dtv.distancealert                BRAVIA CAM distance alert
+com.sony.dtv.seeds.iot                    Smart-home control (Google Home / Alexa / BRAVIA Connect)
+com.sony.dtv.seeds.iot.remotestart        Smart-home remote start
+com.sony.dtv.devicecontrolservice         Smart-home device control
+com.sony.dtv.b2b.hotelmode                Hotel / Pro mode
+com.sony.dtv.b2b.rs232csupport            RS-232C control (business installs)
+
+## Replaced by the custom launcher
+com.google.android.apps.tv.launcherx      Stock Google TV home screen
+com.google.android.tungsten.setupwraith   Google TV setup wizard (takes over Home once the stock launcher is off)

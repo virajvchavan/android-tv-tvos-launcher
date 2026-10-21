@@ -1,0 +1,11 @@
+# Local only: TV backup (holds the serial number, Android ID and Bluetooth address) and debug screenshots.
+backup/
+shots/
+
+# Apple's aerial videos are Apple's content; keep them on your own TV only.
+wallpapers/coast.mp4
+wallpapers/peaks.mp4
+wallpapers/ridge.mp4
+wallpapers/sunrise.mp4
+
+.DS_Store
