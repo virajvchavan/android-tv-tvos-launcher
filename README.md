@@ -20,10 +20,13 @@ Sony BRAVIA KD-43X80L, Google TV, Android 12.
 
 | Path | What it is |
 | --- | --- |
+| `CLAUDE.md` | Instructions for making changes with Claude Code: how to deploy to the TV, check it, and what to avoid |
 | `build-and-install.sh` | Builds the home screen, installs it and makes it the Home app |
 | `tools/restore.sh` | Undoes everything: re-enables all apps, gives Home back to Google TV, resets DNS |
 | `tools/disable.sh` | Disables apps and logs them in `disabled-by-us.txt` (what `restore.sh` reads) |
 | `tools/shot.sh` | Takes a screenshot from the TV into `shots/` (local only, not in the repo) |
+| `tools/find-tv.py` | Finds the TV on your network and saves its address in `.tv-ip` (local only) |
+| `tools/tv-env.sh` | Used by the other scripts to connect to the TV |
 | `tools/adb-closed.py` | Checks that ADB on the TV is really closed |
 | `tools/push-wallpapers.sh` | Copies wallpapers to the TV |
 | `tools/make-wallpaper.py`, `tools/make-drift.py` | Make the colour-blur pictures and the Drift video |
@@ -33,22 +36,40 @@ Sony BRAVIA KD-43X80L, Google TV, Android 12.
 | `backup/` | Package lists, settings and properties from before any change (local only, not in the repo: it holds the TV's serial number and IDs) |
 | `launcher/` | The home screen source (Java, Android Studio / Gradle project) |
 
-## Before running any command
+## Making changes
 
-All commands need ADB. ADB is the Android tool that talks to the TV over Wi-Fi. When we finished, it was switched off for safety. To turn it back on:
+Open Claude Code in this folder and ask for the change. `CLAUDE.md` tells it how to build, put the change on the TV, check it with screenshots, and what not to break. A new session needs no memory of earlier ones.
 
-1. On the TV: Settings > System > About > press OK 7 times on "Android TV OS build" (just "Build" on some versions).
-2. Back to Settings > System > Developer options > turn on **USB debugging**.
-3. On the Mac:
+By hand, it's two commands:
 
 ```sh
-adb connect <tv-ip>:5555
-export ANDROID_SERIAL=<tv-ip>:5555
+python3 tools/find-tv.py      # once, or whenever the TV's IP changes
+./build-and-install.sh        # puts the current code on the TV
 ```
 
-4. Accept the "Allow USB debugging?" box on the TV.
+Your app layout, hidden apps and wallpaper stay as they are when you reinstall.
 
-If port 5555 doesn't answer, also turn on Network debugging if your Developer options show it.
+The plain `adb ...` commands further down work once the Mac is connected to the TV. Any script above connects it.
+
+## ADB (how the Mac talks to the TV)
+
+ADB is left **on**, so changes can be put on the TV any time it's on. It survives restarts.
+
+Is that safe? On your own home Wi-Fi, yes, with one rule:
+
+- **Never accept an "Allow USB debugging?" box you didn't expect.** Any device on your Wi-Fi can make that box appear, but it only gets in if someone presses Allow on the TV. Press Cancel if you didn't start it.
+- Only this Mac is approved. If it isn't used for 7 days, the TV asks once more next time (Android's default). Accept it then.
+- ADB traffic on the network isn't encrypted. Someone already on your Wi-Fi could watch a session while one is running, but couldn't start one.
+- If you ever put the TV on a shared or public network (office, hotel), turn ADB off first.
+- If an app ever refuses to play because "developer options" are on, turn USB debugging off for that app.
+
+To turn ADB off: on the TV, Settings > System > Developer options > tap "Revoke USB debugging authorisations", turn off **USB debugging**, then restart the TV. Check from the Mac with `python3 tools/adb-closed.py <tv-ip>`; only "CLOSED" proves it's off.
+
+To turn it back on:
+
+1. On the TV: Settings > System > About > press OK 7 times on "Android TV OS build" (just "Build" on some versions).
+2. Back to Settings > System > Developer options > turn on **USB debugging** (and Network debugging, if your TV shows it).
+3. On the Mac: `python3 tools/find-tv.py`, then accept the "Allow USB debugging?" box on the TV and run it again.
 
 ## Turn one app back on
 

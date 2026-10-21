@@ -3,6 +3,7 @@
 # Runs one pm call per package: chained pm commands can stop after the first.
 set -u
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$DIR/tools/tv-env.sh"
 LOG="$DIR/disabled-by-us.txt"
 touch "$LOG"
 for p in "$@"; do

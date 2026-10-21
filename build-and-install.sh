@@ -1,8 +1,9 @@
 #!/bin/bash
 # Builds the launcher, installs it on the TV and makes it the Home app.
-# Usage: ANDROID_SERIAL=<tv ip>:5555 ./build-and-install.sh
+# Usage: ./build-and-install.sh   (finds the TV through .tv-ip; ANDROID_SERIAL=<tv-ip>:5555 overrides it)
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$DIR/tools/tv-env.sh"
 PKG=com.viraj.tvhome
 
 cd "$DIR/launcher"
@@ -30,3 +31,4 @@ for attempt in 1 2 3 4 5; do
 done
 adb shell cmd package set-home-activity $PKG/.MainActivity
 adb shell am start -n $PKG/.MainActivity
+echo "Running on $ANDROID_SERIAL"

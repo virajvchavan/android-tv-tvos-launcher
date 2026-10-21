@@ -1,9 +1,10 @@
 #!/bin/bash
 # Undoes everything: re-enables every package in disabled-by-us.txt,
 # gives Home back to the stock Google TV launcher and resets DNS.
-# Usage: ANDROID_SERIAL=<tv ip>:5555 tools/restore.sh
+# Usage: tools/restore.sh
 set -u
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
+source "$DIR/tools/tv-env.sh"
 LOG="$DIR/disabled-by-us.txt"
 if [ -f "$LOG" ]; then
   while read -r p; do

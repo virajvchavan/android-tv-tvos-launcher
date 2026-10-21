@@ -8,4 +8,7 @@ wallpapers/peaks.mp4
 wallpapers/ridge.mp4
 wallpapers/sunrise.mp4
 
+# This TV's address on your network; tools/find-tv.py writes it.
+.tv-ip
+
 .DS_Store
