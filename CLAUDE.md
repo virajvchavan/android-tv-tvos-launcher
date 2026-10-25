@@ -3,6 +3,7 @@
 This repo drives one real TV: a Sony BRAVIA KD-43X80L (Google TV, Android 12, API 31, armeabi-v7a, ~3 GB RAM,
 UI at 1920x1080). It holds a debloat setup and a custom tvOS-style launcher (`launcher/`, package `com.viraj.tvhome`).
 The user's own instructions are in `~/.claude/CLAUDE.md`; this file adds what is specific to this repo.
+The launcher also runs on a second TV, a Xiaomi Mi TV (see "Second TV" below), so it must keep working on API 28.
 
 ## Every change must reach the TV
 
@@ -92,7 +93,7 @@ The launcher keeps the user's choices in `shared_prefs/MainActivity.xml`
 - `KeyService.java`: accessibility service that opens Settings for the remote's gear button (scan code 646).
 - Fonts (`assets/fonts`): Inter for the grid's app names, Outfit for the clock, greeting, pills and menus.
   The dock shows no names, like the tvOS top row.
-- `res/values/config.xml`: starting dock apps, Settings-button scan codes, the TV app package.
+- `res/values/config.xml`: starting dock apps, Settings-button scan codes, the TV app packages (first installed wins).
 - Dock = first 6 visible apps; `COLUMNS = 6`; `FOCUS_SCALE = 1.2`.
 
 ## Hard-won TV quirks (keep these in mind)
@@ -120,6 +121,21 @@ The launcher keeps the user's choices in `shared_prefs/MainActivity.xml`
   keyboards, Play Store, Play Services, `com.android.tv.settings`.
 - `com.google.android.apps.tv.launcherx` and `com.google.android.tungsten.setupwraith` are disabled on purpose:
   with either enabled, Home stops opening this launcher.
+
+## Second TV: Xiaomi Mi TV
+
+Model `MiTV-AXSO0` (Android 9, API 28, armeabi-v7a, 1 GB RAM, 1280x720 at 213 dpi, so the same 960x540 dp layout).
+Only the launcher is on it; none of the debloat applies.
+
+- `.tv-ip` stays the BRAVIA's. Target the Mi TV with `ANDROID_SERIAL=<ip>:5555` before any script or adb command.
+  `tools/find-tv.py` lists every TV it finds but saves only the first.
+- `minSdk` is 28 for this TV. After code changes, `./gradlew lintDebug` must report no `NewApi` errors.
+- `com.google.android.tvlauncher` is disabled on purpose: its HOME filter has priority 2, which beats any
+  preferred Home app. It is not in `disabled-by-us.txt` (that list is the BRAVIA's, read by `restore.sh`).
+- Its TV app is `com.android.tv`. The remote's Settings button has no scan code mapped.
+- On Android 9 the Verifying greps differ: use `dumpsys activity activities | grep mResumedActivity` and
+  `dumpsys accessibility | grep "Home remote keys"`.
+- No wallpapers are on it yet. Video wallpapers haven't been tried with 1 GB RAM.
 
 ## Never commit
 

@@ -28,6 +28,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -47,6 +48,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
@@ -199,18 +201,29 @@ public class MainActivity extends Activity {
         }
     };
 
-    private final ConnectivityManager.NetworkCallback networkCallback =
-            new ConnectivityManager.NetworkCallback(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO) {
-                @Override
-                public void onCapabilitiesChanged(Network network, NetworkCapabilities caps) {
-                    pills[PILL_WIFI].setText(networkName(caps));
-                }
+    private final class NetworkWatcher extends ConnectivityManager.NetworkCallback {
+        NetworkWatcher() {
+        }
 
-                @Override
-                public void onLost(Network network) {
-                    pills[PILL_WIFI].setText(R.string.offline);
-                }
-            };
+        @RequiresApi(Build.VERSION_CODES.S)
+        NetworkWatcher(int flags) {
+            super(flags);
+        }
+
+        @Override
+        public void onCapabilitiesChanged(Network network, NetworkCapabilities caps) {
+            pills[PILL_WIFI].setText(networkName(caps));
+        }
+
+        @Override
+        public void onLost(Network network) {
+            pills[PILL_WIFI].setText(R.string.offline);
+        }
+    }
+
+    private final ConnectivityManager.NetworkCallback networkCallback = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            ? new NetworkWatcher(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO)
+            : new NetworkWatcher();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1091,13 +1104,20 @@ public class MainActivity extends Activity {
         if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
             return getString(R.string.ethernet);
         }
-        if (caps.getTransportInfo() instanceof WifiInfo) {
-            String ssid = ((WifiInfo) caps.getTransportInfo()).getSSID();
-            if (ssid != null && !ssid.equals(WifiManager.UNKNOWN_SSID)) {
-                return ssid.replaceAll("^\"|\"$", "");
-            }
+        String ssid = wifiSsid(caps);
+        if (ssid != null && !ssid.equals(WifiManager.UNKNOWN_SSID)) {
+            return ssid.replaceAll("^\"|\"$", "");
         }
         return getString(R.string.wifi);
+    }
+
+    // Before Android 12 the network callback carries no Wi-Fi details, so the name comes from WifiManager.
+    @SuppressWarnings("deprecation")
+    private String wifiSsid(NetworkCapabilities caps) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return getApplicationContext().getSystemService(WifiManager.class).getConnectionInfo().getSSID();
+        }
+        return caps.getTransportInfo() instanceof WifiInfo ? ((WifiInfo) caps.getTransportInfo()).getSSID() : null;
     }
 
     private File wallpaperDir() {

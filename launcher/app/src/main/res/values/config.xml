@@ -15,6 +15,10 @@
         <item>646</item>
     </integer-array>
 
-    <!-- The app that plays HDMI, AV and Live TV on this set. -->
-    <string name="tv_app_package">com.sony.dtv.tvx</string>
+    <!-- The app that plays HDMI, AV and Live TV: the first one installed (Sony BRAVIA, then stock Android TV).
+         Each also needs a <package> entry under <queries> in the manifest. -->
+    <string-array name="tv_app_packages">
+        <item>com.sony.dtv.tvx</item>
+        <item>com.android.tv</item>
+    </string-array>
 </resources>

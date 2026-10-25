@@ -2,6 +2,7 @@ package com.viraj.tvhome;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
@@ -29,7 +30,7 @@ final class Inputs {
 
     static List<Source> load(Context context) {
         TvInputManager tim = context.getSystemService(TvInputManager.class);
-        String tvApp = context.getString(R.string.tv_app_package);
+        String tvApp = tvApp(context);
         List<Source> hdmi = new ArrayList<>();
         List<Source> av = new ArrayList<>();
         Source liveTv = null;
@@ -69,7 +70,18 @@ final class Inputs {
         return (custom != null && custom.length() > 0 ? custom : info.loadLabel(context)).toString();
     }
 
-    // Some apps (RetroPal on this TV) claim every VIEW intent, so input switches name the TV app.
+    private static String tvApp(Context context) {
+        for (String pkg : context.getResources().getStringArray(R.array.tv_app_packages)) {
+            try {
+                context.getPackageManager().getApplicationInfo(pkg, 0);
+                return pkg;
+            } catch (PackageManager.NameNotFoundException ignored) {
+            }
+        }
+        return null;
+    }
+
+    // Some apps (RetroPal on the BRAVIA) claim every VIEW intent, so input switches name the TV app.
     private static Intent view(Uri uri, String type, String tvApp) {
         return new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type).setPackage(tvApp);
     }

@@ -49,6 +49,16 @@ python3 tools/find-tv.py      # once, or whenever the TV's IP changes
 
 Your app layout, hidden apps and wallpaper stay as they are when you reinstall.
 
+## Xiaomi Mi TV
+
+The home screen also runs on a Xiaomi Mi TV (Android 9, 720p, 1 GB memory). Only the home screen is on it: the debloat list above is for the Sony.
+
+- Put the current code on it: `ANDROID_SERIAL=<mi-tv-ip>:5555 ./build-and-install.sh`. `python3 tools/find-tv.py` prints the address.
+- Google's own home screen (`com.google.android.tvlauncher`) is turned off so that Home opens this one. Android always picks it over other home apps while it's on.
+- **Inputs** opens the Mi TV's TV app.
+- The remote's Settings button is matched for the Sony remote only. Use **Settings** in the top bar.
+- Undo: `adb shell pm enable com.google.android.tvlauncher`, then `adb uninstall com.viraj.tvhome`.
+
 The plain `adb ...` commands further down work once the Mac is connected to the TV. Any script above connects it.
 
 ## ADB (how the Mac talks to the TV)
