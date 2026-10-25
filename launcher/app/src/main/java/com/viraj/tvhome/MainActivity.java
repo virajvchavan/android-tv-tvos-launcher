@@ -84,6 +84,8 @@ public class MainActivity extends Activity {
     // "1-drift.mp4" lists as "Drift" but below the un-numbered files of its kind.
     private static final Pattern ORDER_PREFIX = Pattern.compile("^(\\d{1,4})[-_ ]+");
     static final float FOCUS_SCALE = 1.2f;
+    // How much white is mixed into the app's colour for the focus ring, so dark brand colours still read.
+    private static final float RING_WHITE_MIX = 0.45f;
     private static final int FALLBACK_GLOW = 0xFF5E5CE6;
     private static final long LONG_PRESS_MS = 500;
     // Apple's "smooth" spring: critically damped with a 0.5 s response, so stiffness = (2 * pi / 0.5)^2.
@@ -133,12 +135,12 @@ public class MainActivity extends Activity {
     private FrameLayout content;
     private View highlight;
     private GlassDrawable glass;
+    private int highlightMargin;
     private View glow;
     private GradientDrawable glowDrawable;
     private TextView greeting;
     private TextView clock;
     private TextView date;
-    private TextView dockTitle;
     private TextView[] pills;
     private LinearLayout dock;
     private RecyclerView grid;
@@ -157,6 +159,7 @@ public class MainActivity extends Activity {
     private Typeface light;
     private Typeface regular;
     private Typeface medium;
+    private Typeface labelFont;
 
     private int zone = ZONE_DOCK;
     private int barIndex;
@@ -214,21 +217,22 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        thin = font(200);
-        light = font(300);
-        regular = font(400);
-        medium = font(500);
+        thin = font("Outfit", 200);
+        light = font("Outfit", 300);
+        regular = font("Outfit", 400);
+        medium = font("Outfit", 500);
+        labelFont = font("Inter", 500);
 
         root = findViewById(R.id.root);
         scroll = findViewById(R.id.scroll);
         content = findViewById(R.id.content);
         highlight = findViewById(R.id.highlight);
-        glass = new GlassDrawable(getResources().getDimension(R.dimen.tile_radius) * FOCUS_SCALE, dp(3));
+        highlightMargin = dp(10);
+        glass = new GlassDrawable(getResources().getDimension(R.dimen.tile_radius) * FOCUS_SCALE, highlightMargin, dp(3));
         highlight.setBackground(glass);
         greeting = findViewById(R.id.greeting);
         clock = findViewById(R.id.clock);
         date = findViewById(R.id.date);
-        dockTitle = findViewById(R.id.dock_title);
         dock = findViewById(R.id.dock);
         grid = findViewById(R.id.grid);
         menuPanel = findViewById(R.id.menu_panel);
@@ -264,7 +268,6 @@ public class MainActivity extends Activity {
         greeting.setTypeface(regular);
         clock.setTypeface(thin);
         date.setTypeface(light);
-        dockTitle.setTypeface(light);
         moveHint.setTypeface(medium);
         for (TextView pill : pills) {
             pill.setTypeface(medium);
@@ -284,7 +287,7 @@ public class MainActivity extends Activity {
         scrollSpring.setMinimumVisibleChange(DynamicAnimation.MIN_VISIBLE_CHANGE_PIXELS);
         scroll.setOnScrollChangeListener((v, x, y, oldX, oldY) -> applyGlow(glowColor, glowCenterX, glowAnchorY));
 
-        gridAdapter = new AppAdapter(regular);
+        gridAdapter = new AppAdapter(labelFont);
         grid.setLayoutManager(new GridLayoutManager(this, COLUMNS) {
             // The ScrollView hands the grid only the screen space left under the top area as a size hint,
             // which would lay out just one row; the page scrolls, not the grid, so every row is laid out.
@@ -648,13 +651,6 @@ public class MainActivity extends Activity {
             t.animate().alpha(t == tile ? 1f : othersAlpha).setDuration(180);
         }
 
-        if (zone == ZONE_DOCK && tile != null && !menuOpen) {
-            dockTitle.setText(dockApps.get(dockIndex).label);
-            dockTitle.animate().alpha(1f).setDuration(200);
-        } else {
-            dockTitle.animate().alpha(0f).setDuration(200);
-        }
-
         int target = 0;
         if (zone == ZONE_GRID && tile != null) {
             // Like tvOS: the dock rides at the top above the grid, and only scrolls off when a lower row needs the room.
@@ -716,8 +712,8 @@ public class MainActivity extends Activity {
         if (card.getWidth() == 0) {
             return;
         }
-        int w = Math.round(card.getWidth() * FOCUS_SCALE);
-        int h = Math.round(card.getHeight() * FOCUS_SCALE);
+        int w = Math.round(card.getWidth() * FOCUS_SCALE) + 2 * highlightMargin;
+        int h = Math.round(card.getHeight() * FOCUS_SCALE) + 2 * highlightMargin;
         ViewGroup.LayoutParams lp = highlight.getLayoutParams();
         if (lp.width != w || lp.height != h) {
             lp.width = w;
@@ -781,6 +777,7 @@ public class MainActivity extends Activity {
         glowAnchorY = anchorY;
         glowDrawable.setColors(new int[] {withAlpha(color, 0x73), withAlpha(color, 0x24), Color.TRANSPARENT});
         glowDrawable.setGradientCenter(centerX, (anchorY - scroll.getScrollY()) / root.getHeight());
+        glass.setRingColor((int) argb.evaluate(RING_WHITE_MIX, color | 0xFF000000, 0xFFFFFFFF));
     }
 
     private void showInputsMenu() {
@@ -888,7 +885,6 @@ public class MainActivity extends Activity {
             y = Math.max(margin, anchor.top - h - dp(12));
         }
         boolean wasOpen = menuOpen;
-        dockTitle.animate().alpha(0f).setDuration(120);
         menuPanel.animate().cancel();
         menuPanel.scrollTo(0, 0);
         menuPanel.setTranslationX(x);
@@ -1059,7 +1055,7 @@ public class MainActivity extends Activity {
             }
         }
         for (int i = 0; i < dockApps.size(); i++) {
-            AppAdapter.bind(dockTiles.get(i), dockApps.get(i), regular);
+            AppAdapter.bind(dockTiles.get(i), dockApps.get(i), labelFont);
         }
     }
 
@@ -1250,8 +1246,8 @@ public class MainActivity extends Activity {
         return new SpringForce().setStiffness(420f).setDampingRatio(0.72f);
     }
 
-    private Typeface font(int weight) {
-        return new Typeface.Builder(getAssets(), "fonts/Outfit.ttf")
+    private Typeface font(String family, int weight) {
+        return new Typeface.Builder(getAssets(), "fonts/" + family + ".ttf")
                 .setFontVariationSettings("'wght' " + weight)
                 .build();
     }

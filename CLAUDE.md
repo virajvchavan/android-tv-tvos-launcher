@@ -86,9 +86,12 @@ The launcher keeps the user's choices in `shared_prefs/MainActivity.xml`
   `showMenu`; app order and hiding in `loadApps` / `showApps` / `saveLayout`; wallpapers in `loadWallpaper`,
   `startVideo`, `stopVideo`; scroll is a critically damped spring (`SMOOTH_STIFFNESS`).
 - `CardDrawable` + `Squircle`: tiles drawn as anti-aliased continuous-curvature squircles, cached per app at focus size.
-- `GlassDrawable`: the focus sheen and the move-mode ring.
+- `GlassDrawable`: the focus sheen, the focus ring (tinted with the app's colour, see `RING_WHITE_MIX`; its colour
+  follows the glow animation in `applyGlow`) and the white move-mode ring.
 - `Inputs.java`: HDMI / AV / Live TV list from the TV input framework.
 - `KeyService.java`: accessibility service that opens Settings for the remote's gear button (scan code 646).
+- Fonts (`assets/fonts`): Inter for the grid's app names, Outfit for the clock, greeting, pills and menus.
+  The dock shows no names, like the tvOS top row.
 - `res/values/config.xml`: starting dock apps, Settings-button scan codes, the TV app package.
 - Dock = first 6 visible apps; `COLUMNS = 6`; `FOCUS_SCALE = 1.2`.
 

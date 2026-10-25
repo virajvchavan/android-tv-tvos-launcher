@@ -123,17 +123,6 @@
                             android:text="@string/settings" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/dock_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom|start"
-                        android:layout_marginStart="49dp"
-                        android:layout_marginBottom="143dp"
-                        android:alpha="0"
-                        android:textColor="#F5F5F7"
-                        android:textSize="40sp" />
-
                     <LinearLayout
                         android:id="@+id/dock"
                         android:layout_width="match_parent"

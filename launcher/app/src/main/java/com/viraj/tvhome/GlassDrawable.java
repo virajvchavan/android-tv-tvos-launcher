@@ -7,69 +7,96 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 
-/** The focus highlight: a top-lit sheen in the same squircle as the tiles, optionally ringed while moving an app. */
+/**
+ * The focus highlight, drawn over the focused card: a top-lit sheen in the tile's squircle and a ring hugging the
+ * card's outside edge, tinted with the app's colour. While an app is being moved, a white ring sits on the card's
+ * edge instead and the sheen brightens. The bounds extend {@code margin} past the card to leave room for the ring.
+ */
 final class GlassDrawable extends Drawable {
     private final float radius;
+    private final float margin;
     private final float ringWidth;
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Path path = new Path();
-    private final Path ringPath = new Path();
+    private final Paint focusRing = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint liftRing = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Path card = new Path();
+    private final Path focusPath = new Path();
+    private final Path liftPath = new Path();
     private boolean lifted;
 
-    GlassDrawable(float radius, float ringWidth) {
+    GlassDrawable(float radius, float margin, float ringWidth) {
         this.radius = radius;
+        this.margin = margin;
         this.ringWidth = ringWidth;
-        ring.setStyle(Paint.Style.STROKE);
-        ring.setStrokeWidth(ringWidth);
-        ring.setColor(0xFFFFFFFF);
+        for (Paint ring : new Paint[] {focusRing, liftRing}) {
+            ring.setStyle(Paint.Style.STROKE);
+            ring.setStrokeWidth(ringWidth);
+            ring.setColor(0xF2FFFFFF);
+        }
+    }
+
+    void setRingColor(int color) {
+        focusRing.setColor(color);
+        invalidateSelf();
     }
 
     void setLifted(boolean lifted) {
         this.lifted = lifted;
-        updateFill(getBounds());
+        updateFill();
         invalidateSelf();
     }
 
     @Override
     protected void onBoundsChange(Rect bounds) {
-        Squircle.build(path, bounds.width(), bounds.height(), radius);
-        path.offset(bounds.left, bounds.top);
-        float inset = ringWidth / 2;
-        Squircle.build(ringPath, bounds.width() - ringWidth, bounds.height() - ringWidth, radius - inset);
-        ringPath.offset(bounds.left + inset, bounds.top + inset);
-        updateFill(bounds);
+        RectF c = new RectF(bounds);
+        c.inset(margin, margin);
+        squircle(card, c, 0, radius);
+        squircle(focusPath, c, ringWidth / 2, radius + ringWidth / 2);
+        squircle(liftPath, c, -ringWidth / 2, radius - ringWidth / 2);
+        updateFill();
     }
 
-    private void updateFill(Rect bounds) {
+    private static void squircle(Path path, RectF r, float grow, float radius) {
+        Squircle.build(path, r.width() + 2 * grow, r.height() + 2 * grow, radius);
+        path.offset(r.left - grow, r.top - grow);
+    }
+
+    private void updateFill() {
+        RectF c = new RectF(getBounds());
+        c.inset(margin, margin);
         int[] colors = lifted
                 ? new int[] {0x5CFFFFFF, 0x14FFFFFF}
                 : new int[] {0x38FFFFFF, 0x0AFFFFFF, 0x00FFFFFF};
-        fill.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom, colors, null, Shader.TileMode.CLAMP));
+        fill.setShader(new LinearGradient(0, c.top, 0, c.bottom, colors, null, Shader.TileMode.CLAMP));
     }
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawPath(path, fill);
+        canvas.drawPath(card, fill);
         if (lifted) {
-            canvas.drawPath(ringPath, ring);
+            canvas.drawPath(liftPath, liftRing);
+        } else {
+            canvas.drawPath(focusPath, focusRing);
         }
     }
 
     @Override
     public void setAlpha(int alpha) {
         fill.setAlpha(alpha);
-        ring.setAlpha(alpha);
+        focusRing.setAlpha(alpha);
+        liftRing.setAlpha(alpha);
         invalidateSelf();
     }
 
     @Override
     public void setColorFilter(ColorFilter colorFilter) {
         fill.setColorFilter(colorFilter);
-        ring.setColorFilter(colorFilter);
+        focusRing.setColorFilter(colorFilter);
+        liftRing.setColorFilter(colorFilter);
         invalidateSelf();
     }
 

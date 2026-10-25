@@ -8,7 +8,7 @@
     android:paddingStart="13dp"
     android:paddingTop="8dp"
     android:paddingEnd="13dp"
-    android:paddingBottom="16dp">
+    android:paddingBottom="26dp">
 
     <ImageView
         android:id="@+id/card"
@@ -25,6 +25,7 @@
         android:alpha="0"
         android:ellipsize="end"
         android:gravity="center"
+        android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#E5E5EA"
         android:textSize="12sp" />
